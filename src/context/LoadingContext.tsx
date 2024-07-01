@@ -12,7 +12,7 @@ const loadingContextDefaultValues: loadingContextType = {
 
 export const LoadingContext = createContext<loadingContextType>(loadingContextDefaultValues);
 
-export const Loading = ({ children }: { children: React.ReactNode }) => {
+export const LoadingProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(false);
 
   const switchLoading = (value: boolean) => {

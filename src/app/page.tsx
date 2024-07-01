@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { LoadingProvider } from "./context/LoadingContext";
-import { PodcastList } from "./components";
+import { LoadingProvider } from "../context/LoadingContext";
+import { PodcastList } from "../components";
 
 export default function Home() {
   const [filter, setFilter] = useState<string>("");
@@ -14,7 +14,7 @@ export default function Home() {
   };
 
   return (
-    <LoadingProvider>
+    <>
       <div className="flex flex-col pt-2">
         <div className="self-end">
           <span
@@ -32,6 +32,6 @@ export default function Home() {
         </div>
         <PodcastList filter={filter} setResults={setResults} />
       </div>
-    </LoadingProvider>
+    </>
   );
 }

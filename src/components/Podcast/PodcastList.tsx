@@ -1,24 +1,19 @@
-import React, { SetStateAction, useContext, useEffect, useMemo } from 'react';
-import PropTypes from 'prop-types';
-import { LoadingContext } from '@/app/context/LoadingContext';
-import { usePodcast } from '@/app/hook/usePodcast';
-import { PodcastForComponent } from '@/app/interfaces/PodcastForComponent';
+import React, { useContext, useEffect, useMemo } from 'react';
+import { LoadingContext } from '@/context/LoadingContext';
+import { PodcastForComponent } from '@/interfaces/PodcastForComponent';
+import { PodcastItem } from './PodcastItem';
+import { usePodcast } from '@/hook/usePodcast';
 
 interface PodcastListProps {
     filter: string;
     setResults: (value: number) => void;
 }   
-
-interface LoadingContextType {
-  switchLoading: () => void;
-}
-    
 export const PodcastList: React.FC<PodcastListProps> = ({ filter = '', setResults }) => {
 
-  const { switchLoading } = useContext(LoadingContext);
+  const { switchLoading, loading } = useContext(LoadingContext);
   const { podcasts } = usePodcast(switchLoading);
 
-  const displayPodcasts = useMemo(() => {
+  const displayPodcasts: PodcastForComponent[] = useMemo(() => {
     if (podcasts.length > 0) {
       if (filter) {
         return podcasts.filter(
@@ -48,14 +43,9 @@ export const PodcastList: React.FC<PodcastListProps> = ({ filter = '', setResult
           id={id}
           name={name}
           artist={artist}
-          image={imageUrl}
+          imageUrl={imageUrl}
         />
       ))}
     </div>
   );
-};
-
-PodcastList.propTypes = {
-  filter: PropTypes.string,
-  setResults: PropTypes.func,
 };

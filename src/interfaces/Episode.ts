@@ -5,5 +5,5 @@ export interface Episode {
     releaseDate: string;
     trackId: number;
     trackName: string;
-    trackTimeMillis: string;
+    trackTimeMillis: number;
 }

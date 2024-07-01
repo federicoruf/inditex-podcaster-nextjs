@@ -1,23 +1,24 @@
 import { useEffect, useState } from "react";
-import { hasPassedTimeLimit } from "../utils";
 import { Podcast } from "../interfaces/Podcast";
 import { Episode } from "../interfaces/Episode";
 import { PodcastForComponent } from "../interfaces/PodcastForComponent";
-import itunesService from "../services/itunesService";
+import itunesService from "@/services/itunesService";
+import { hasPassedTimeLimit } from "@/utils";
 
-export const usePodcast = (switchLoading: (value: boolean) => void) => {
+export const usePodcast = (switchLoading?: (value: boolean) => void) => {
   const [podcasts, setPodcasts] = useState<PodcastForComponent[]>([]);
 
-  const extractPodcastData = (podcasts: Podcast[]) =>
-    podcasts.map((podcast: Podcast) => {
+  const extractPodcastData = (podcasts: Podcast[]) => {
+    return podcasts.map((podcast: Podcast) => {
       return {
         id: podcast.id.attributes["im:id"],
-        name: podcast["im:name"]?.label,
-        artist: podcast["im:artist"]?.label,
-        image: podcast["im:image"][0]?.label,
-        summary: podcast.summary?.label,
+        name: podcast["im:name"]?.label ?? "",
+        artist: podcast["im:artist"]?.label ?? "",
+        imageUrl: podcast["im:image"][0]?.label ?? "",
+        summary: podcast.summary?.label ?? "",
       };
     });
+  };
 
   const extractEpisodeData = (episodes: Episode[]) =>
     episodes.map((episode) => {
@@ -42,7 +43,9 @@ export const usePodcast = (switchLoading: (value: boolean) => void) => {
     });
 
   const onRequestDetails = async (podcastId: string) => {
-    switchLoading(true);
+    if (switchLoading) {
+      switchLoading(true);
+    }
     const details = await itunesService.getPodcastEpisodes(podcastId);
     const formattedEpisodes = extractEpisodeData(details);
     const requestTime = new Date().getTime();
@@ -50,18 +53,24 @@ export const usePodcast = (switchLoading: (value: boolean) => void) => {
       (item) => item.kind === "podcast-episode"
     );
     localStorage.setItem(podcastId, JSON.stringify({ episodes, requestTime }));
-    switchLoading(false);
+    if (switchLoading) {
+      switchLoading(false);
+    }
     return episodes;
   };
 
   const fetchData = async () => {
-    switchLoading(true);
+    if (switchLoading) {
+      switchLoading(true);
+    }
     const resultService = await itunesService.getTopPodcasts();
     const list: PodcastForComponent[] = extractPodcastData(resultService);
     const requestTime = new Date().getTime();
     localStorage.setItem("podcasts", JSON.stringify({ list, requestTime }));
     setPodcasts(list);
-    switchLoading(false);
+    if (switchLoading) {
+      switchLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -80,13 +89,16 @@ export const usePodcast = (switchLoading: (value: boolean) => void) => {
 
   const getFromLocalStorage = (item: string) => {
     const items = localStorage.getItem(item);
-    const { list } = items ? JSON.parse(items) : { list: [] };
-    return list;
+    if (items) {
+      const result = JSON.parse(items);
+      return result;
+    }
+    return [];
   };
 
   const getPodcastDetails = (podcastId: string) => {
-    const list = getFromLocalStorage('podcasts');
-    return list.find(
+    const result = getFromLocalStorage("podcasts");
+    return result.list.find(
       (podcast: PodcastForComponent) => podcast.id === podcastId
     );
   };
@@ -104,8 +116,10 @@ export const usePodcast = (switchLoading: (value: boolean) => void) => {
   };
 
   const getEpisode = (podcastId: string, episodeId: string) => {
-    const episodes = getFromLocalStorage('episodes');
-    return episodes.find((episode: Episode) => episode.trackId === +episodeId);
+    const result = getFromLocalStorage(podcastId);
+    return result.episodes.find(
+      (episode: Episode) => episode.trackId === +episodeId
+    );
   };
 
   return {

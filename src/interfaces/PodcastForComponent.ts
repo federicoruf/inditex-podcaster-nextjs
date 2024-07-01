@@ -2,6 +2,6 @@ export interface PodcastForComponent {
   id: string;
   name: string;
   artist: string;
-  image: string;
+  imageUrl: string;
   summary: string;
 }
