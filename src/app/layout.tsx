@@ -1,7 +1,10 @@
-'use client';
+"use client";
 import "./globals.css";
 import { Header } from "@/components/Common/Header";
 import { LoadingProvider } from "@/context/LoadingContext";
+import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 export default function RootLayout({
   children,
@@ -11,10 +14,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-white">
-        <LoadingProvider>
-          <Header />
-          {children}
-        </LoadingProvider>
+        <QueryClientProvider client={queryClient}>
+          <LoadingProvider>
+            <Header />
+            {children}
+          </LoadingProvider>
+        </QueryClientProvider>
       </body>
     </html>
   );

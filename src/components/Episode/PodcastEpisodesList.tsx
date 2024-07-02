@@ -1,18 +1,65 @@
 import React, { useContext, useEffect, useState } from "react";
 import classNames from "classnames";
 import { LoadingContext } from "@/context/LoadingContext";
-import { usePodcast } from "@/hook/usePodcast";
 import Link from "next/link";
 import { Episode } from "@/interfaces/Episode";
 import { formatDate, formatMilliseconds } from "@/utils";
+import { CORS, PODCAST_EPISODES } from "@/services/urls";
+import axios from "axios";
+import { useQuery } from "@tanstack/react-query";
+import { PodcastForComponent } from "@/interfaces/PodcastForComponent";
 
+const HOURS_24 = 24 * 60 * 60 * 1000;
+
+const extractEpisodeData = (episodes: Episode[]) =>
+  episodes.map((episode) => {
+    const {
+      description,
+      episodeUrl,
+      kind,
+      releaseDate,
+      trackId,
+      trackName,
+      trackTimeMillis,
+    } = episode;
+    return {
+      description,
+      episodeUrl,
+      kind,
+      releaseDate,
+      trackId,
+      trackName,
+      trackTimeMillis,
+    };
+  });
+
+
+const getPodcastEpisodes = async (podcastId: string): Promise<Episode[]> => {
+  const response = await axios(
+    `${CORS}${encodeURIComponent(PODCAST_EPISODES(podcastId))}`
+  );
+  return extractEpisodeData(response.data.results);
+};
+
+const usePodcastEpisodes = (podcastId: string) => {
+  return useQuery<Episode[]>({
+    queryKey: ["getPodcastEpisodes", podcastId],
+    queryFn: () => getPodcastEpisodes(podcastId),
+    gcTime: HOURS_24,
+  });
+};
 type PodcastEpisodesListProps = {
   podcastId: string;
 };
 
-export const PodcastEpisodesList = ({ podcastId }: PodcastEpisodesListProps) => {
+export const PodcastEpisodesList = ({
+  podcastId,
+}: PodcastEpisodesListProps) => {
   const { switchLoading, loading } = useContext(LoadingContext);
-  const { getPodcastEpisodes } = usePodcast(switchLoading);
+
+  const { status, data, error, isFetching } = usePodcastEpisodes(podcastId);
+  
+  switchLoading(isFetching);
   const [podcastEpisodes, setPodcastEpisodes] = useState<Episode[]>([]);
 
   useEffect(() => {

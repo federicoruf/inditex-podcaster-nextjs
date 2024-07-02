@@ -1,8 +1,56 @@
-'use client';
+"use client";
 
-import { usePodcast } from "@/hook/usePodcast";
 import { Episode } from "@/interfaces/Episode";
+import { PodcastForComponent } from "@/interfaces/PodcastForComponent";
+import { CORS, PODCAST_EPISODES } from "@/services/urls";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 import React, { useEffect, useState } from "react";
+
+const HOURS_24 = 24 * 60 * 60 * 1000;
+
+const extractEpisodeData = (episodes: Episode[]) =>
+  episodes.map((episode) => {
+    const {
+      description,
+      episodeUrl,
+      kind,
+      releaseDate,
+      trackId,
+      trackName,
+      trackTimeMillis,
+    } = episode;
+    return {
+      description,
+      episodeUrl,
+      kind,
+      releaseDate,
+      trackId,
+      trackName,
+      trackTimeMillis,
+    };
+  });
+
+const getPodcastEpisodes = async (podcastId: string): Promise<Episode[]> => {
+  const response = await axios(
+    `${CORS}${encodeURIComponent(PODCAST_EPISODES(podcastId))}`
+  );
+  return extractEpisodeData(response.data.results);
+};
+
+const usePodcastEpisodes = (podcastId: string) => {
+  return useQuery<Episode[]>({
+    queryKey: ["getPodcastEpisodes", podcastId],
+    queryFn: () => getPodcastEpisodes(podcastId),
+    gcTime: HOURS_24,
+  });
+};
+
+const getEpisode = (episodes: Episode[], episodeId: string) => {
+  return episodes.find(
+    (episode: Episode) => episode.trackId === +episodeId
+  ); 
+};
 
 interface EpisodePlayerProps {
   podcastId: string;
@@ -13,12 +61,15 @@ export const EpisodePlayer: React.FC<EpisodePlayerProps> = ({
   podcastId,
   episodeId,
 }) => {
-  const { getEpisode } = usePodcast();
+  const { status, data, error, isFetching } = usePodcastEpisodes(podcastId);
+
   const [displayEpisode, setDisplayEpisode] = useState<Episode>();
 
   useEffect(() => {
-    setDisplayEpisode(getEpisode(podcastId, episodeId));
-  }, []);
+    if (data) {
+      setDisplayEpisode(getEpisode(data, episodeId));
+    }
+  }, [data]);
 
   const formatURL = () => {
     if (displayEpisode) {
