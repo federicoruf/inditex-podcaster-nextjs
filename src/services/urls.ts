@@ -4,3 +4,4 @@ export const TOP_PODCASTS = () =>
   `${BASE_URL}us/rss/toppodcasts/limit=100/genre=1310/json`;
 export const PODCAST_EPISODES = (id: string) =>
   `${BASE_URL}lookup?id=${id}&media=podcast&entity=podcastEpisode&limit=20`;
+export const HOURS_24 = 24 * 60 * 60 * 1000;

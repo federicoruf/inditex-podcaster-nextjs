@@ -4,50 +4,8 @@ import { LoadingContext } from "@/context/LoadingContext";
 import Link from "next/link";
 import { Episode } from "@/interfaces/Episode";
 import { formatDate, formatMilliseconds } from "@/utils";
-import { CORS, PODCAST_EPISODES } from "@/services/urls";
-import axios from "axios";
-import { useQuery } from "@tanstack/react-query";
-import { PodcastForComponent } from "@/interfaces/PodcastForComponent";
+import { usePodcastEpisodes } from "@/services/itunesService";
 
-const HOURS_24 = 24 * 60 * 60 * 1000;
-
-const extractEpisodeData = (episodes: Episode[]) =>
-  episodes.map((episode) => {
-    const {
-      description,
-      episodeUrl,
-      kind,
-      releaseDate,
-      trackId,
-      trackName,
-      trackTimeMillis,
-    } = episode;
-    return {
-      description,
-      episodeUrl,
-      kind,
-      releaseDate,
-      trackId,
-      trackName,
-      trackTimeMillis,
-    };
-  });
-
-
-const getPodcastEpisodes = async (podcastId: string): Promise<Episode[]> => {
-  const response = await axios(
-    `${CORS}${encodeURIComponent(PODCAST_EPISODES(podcastId))}`
-  );
-  return extractEpisodeData(response.data.results);
-};
-
-const usePodcastEpisodes = (podcastId: string) => {
-  return useQuery<Episode[]>({
-    queryKey: ["getPodcastEpisodes", podcastId],
-    queryFn: () => getPodcastEpisodes(podcastId),
-    gcTime: HOURS_24,
-  });
-};
 type PodcastEpisodesListProps = {
   podcastId: string;
 };
@@ -55,20 +13,21 @@ type PodcastEpisodesListProps = {
 export const PodcastEpisodesList = ({
   podcastId,
 }: PodcastEpisodesListProps) => {
-  const { switchLoading, loading } = useContext(LoadingContext);
+  const { switchLoading } = useContext(LoadingContext);
 
-  const { status, data, error, isFetching } = usePodcastEpisodes(podcastId);
-  
-  switchLoading(isFetching);
+  const { data, isFetching } = usePodcastEpisodes(podcastId);
   const [podcastEpisodes, setPodcastEpisodes] = useState<Episode[]>([]);
+  
+  useEffect(() => {
+    switchLoading(isFetching);
+  }, [isFetching, switchLoading]);
+
 
   useEffect(() => {
-    const fetchData = async () => {
-      const details = await getPodcastEpisodes(podcastId);
-      setPodcastEpisodes(details);
-    };
-    fetchData();
-  }, []);
+    if (data) {
+      setPodcastEpisodes(data);
+    }
+  }, [data]);
 
   return (
     <div className="flex flex-col grow w-3/4 ml-12">

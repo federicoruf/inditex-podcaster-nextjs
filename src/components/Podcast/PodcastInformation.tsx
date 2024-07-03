@@ -1,55 +1,19 @@
 "use client";
 
-import { Podcast } from "@/interfaces/Podcast";
+import { LoadingContext } from "@/context/LoadingContext";
 import { PodcastForComponent } from "@/interfaces/PodcastForComponent";
-import { CORS, TOP_PODCASTS } from "@/services/urls";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import { useTopPodcasts } from "@/services/itunesService";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
-
-const HOURS_24 = 24 * 60 * 60 * 1000;
-
-const extractPodcastData = (podcasts: Podcast[]) => {
-  return podcasts.map((podcast: Podcast) => {
-    return {
-      id: podcast.id.attributes["im:id"],
-      name: podcast["im:name"]?.label ?? "",
-      artist: podcast["im:artist"]?.label ?? "",
-      imageUrl: podcast["im:image"][0]?.label ?? "",
-      summary: podcast.summary?.label ?? "",
-    };
-  });
-};
-
-const getTopPodcasts = async (): Promise<PodcastForComponent[]> => {
-  const response = await axios(`${CORS}${encodeURIComponent(TOP_PODCASTS())}`);
-  return extractPodcastData(response.data.feed.entry);
-};
-
-const useTopPodcasts = () => {
-  return useQuery<PodcastForComponent[]>({
-    queryKey: ["getTopPodcasts"],
-    queryFn: () => getTopPodcasts(),
-    gcTime: HOURS_24,
-  });
-};
-
-const getPodcastDetails = (data: PodcastForComponent[], podcastId: string) => {
-  return data.find(
-    (podcast: PodcastForComponent) => podcast.id === podcastId
-  );
-};
+import React, { useContext, useEffect, useState } from "react";
 
 type PodcastInformationProps = {
   podcastId: string;
 };
 
 export const PodcastInformation = ({ podcastId }: PodcastInformationProps) => {
-  //const { getPodcastDetails } = usePodcast();
-  const { status, data, error, isFetching } = useTopPodcasts();
-
+  const { data, isFetching } = useTopPodcasts();
+  const { switchLoading } = useContext(LoadingContext);
   const [displayPodcast, setDisplayPodcast] = useState<PodcastForComponent>();
 
   useEffect(() => {
@@ -57,6 +21,16 @@ export const PodcastInformation = ({ podcastId }: PodcastInformationProps) => {
       setDisplayPodcast(getPodcastDetails(data, podcastId));
     }
   }, [data]);
+
+  useEffect(() => {
+    switchLoading(isFetching)
+  }, [isFetching, switchLoading]);
+
+  const getPodcastDetails = (data: PodcastForComponent[], podcastId: string) => {
+    return data.find(
+      (podcast: PodcastForComponent) => podcast.id === podcastId
+    );
+  };
 
   return (
     <>

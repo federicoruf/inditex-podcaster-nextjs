@@ -11,13 +11,6 @@ type PodcastProps = {
 export default function Podcast({
   params: { podcastId },
 }: PodcastProps) {
-  const [filter, setFilter] = useState<string>("");
-  const [results, setResults] = useState<number>();
-
-  const onChangeFilter = ({ target }: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = target;
-    setFilter(value);
-  };
 
   return (
     <div className='flex flex-row mt-5'>
