@@ -30,9 +30,10 @@ export const EpisodePlayer: React.FC<EpisodePlayerProps> = ({
   }, [data]);
 
   const getEpisode = (episodes: Episode[], episodeId: string) => {
-    return episodes.find(
+    const result = episodes.find(
       (episode: Episode) => episode.trackId === +episodeId
     ); 
+    return result; 
   };
 
   const formatURL = () => {
@@ -45,7 +46,7 @@ export const EpisodePlayer: React.FC<EpisodePlayerProps> = ({
     description && description.split("\n").map((line, index) => <div key={index}>{line}</div>);
 
   return (
-    <div className="flex flex-col grow w-3/4">
+    <div className="flex flex-col grow w-3/4" data-testid="episode-player">
       {displayEpisode && (
         <div className="shadow-lg shadow-black-500/20 card text-xs">
           <div className="font-bold text-lg pb-3">
@@ -53,7 +54,7 @@ export const EpisodePlayer: React.FC<EpisodePlayerProps> = ({
           </div>
           <div className="pb-3">{splitLines(displayEpisode.description)}</div>
           <audio controls className="pb-3 w-full" data-testid="episode-player">
-            <source src={formatURL()} type="audio/mp3" />
+            <source src={formatURL()} type="audio/mp3" data-testid="episode-source"/>
           </audio>
         </div>
       )}

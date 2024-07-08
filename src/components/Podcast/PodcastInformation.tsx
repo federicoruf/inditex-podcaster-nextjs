@@ -16,9 +16,17 @@ export const PodcastInformation = ({ podcastId }: PodcastInformationProps) => {
   const { switchLoading } = useContext(LoadingContext);
   const [displayPodcast, setDisplayPodcast] = useState<PodcastForComponent>();
 
+  const getPodcastDetails = (data: PodcastForComponent[], podcastId: string) => {
+    const result =  data.find(
+      (podcast: PodcastForComponent) => podcast.id === podcastId
+    );
+    return result;
+  };
+
   useEffect(() => {
     if (data) {
-      setDisplayPodcast(getPodcastDetails(data, podcastId));
+      const podacastDetails = getPodcastDetails(data, podcastId); 
+      setDisplayPodcast(podacastDetails);
     }
   }, [data]);
 
@@ -26,14 +34,8 @@ export const PodcastInformation = ({ podcastId }: PodcastInformationProps) => {
     switchLoading(isFetching)
   }, [isFetching, switchLoading]);
 
-  const getPodcastDetails = (data: PodcastForComponent[], podcastId: string) => {
-    return data.find(
-      (podcast: PodcastForComponent) => podcast.id === podcastId
-    );
-  };
-
   return (
-    <>
+    <div data-testid="podcast-information">
       {displayPodcast && (
         <div className="shadow-lg shadow-black-500/20 card flex flex-col text-xs w-64">
           <Link href={`/podcast/${podcastId}`}>
@@ -59,6 +61,6 @@ export const PodcastInformation = ({ podcastId }: PodcastInformationProps) => {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };

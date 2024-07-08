@@ -60,6 +60,8 @@ const getPodcastEpisodes = async (id: string) => {
     const response = await fetch(
       `${CORS}${encodeURIComponent(PODCAST_EPISODES(id))}`
     );
+
+    //console.log("🚀 ~ getPodcastEpisodes ~ response:", response)
     if (response.ok) {
       const responseJson = await response.json();
       const filteredEpisodes = responseJson.results.filter(
@@ -67,6 +69,7 @@ const getPodcastEpisodes = async (id: string) => {
       );
       return extractEpisodeData(filteredEpisodes);
     } else {
+      //console.log('arroja error');
       throw new Error("Network response was not ok.");
     }
   } catch (error) {
